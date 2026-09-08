@@ -1,0 +1,8 @@
+# .bazelrc for RLWE v2 Crypto library
+
+# Bazel 9 compatibility for external rules autoloading
+common --incompatible_autoload_externally=+@rules_cc,+@rules_proto
+
+# C++17 Standard
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17

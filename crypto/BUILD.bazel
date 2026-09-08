@@ -1,0 +1,311 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+cc_library(
+    name = "status_macros",
+    hdrs = ["status_macros.h"],
+    deps = [
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_library(
+    name = "polynomial",
+    srcs = ["polynomial.cc"],
+    hdrs = ["polynomial.h"],
+    deps = [
+        ":status_macros",
+        "//crypto/proto:rlwe_cc_proto",
+        "@com_github_google_shell_encryption//shell_encryption:constants",
+        "@com_github_google_shell_encryption//shell_encryption:dft_transformations",
+        "@com_github_google_shell_encryption//shell_encryption:int256",
+        "@com_github_google_shell_encryption//shell_encryption:montgomery",
+        "@com_github_google_shell_encryption//shell_encryption:ntt_parameters",
+        "@com_github_google_shell_encryption//shell_encryption:statusor_fork",
+        "@com_github_google_shell_encryption//shell_encryption/rns:crt_interpolation",
+        "@com_github_google_shell_encryption//shell_encryption/rns:rns_modulus",
+        "@com_google_absl//absl/numeric:int128",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings:string_view",
+    ],
+)
+
+cc_library(
+    name = "fft",
+    hdrs = ["fft.h"],
+    deps = [
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "polynomial_fft",
+    srcs = ["polynomial_fft.cc"],
+    hdrs = ["polynomial_fft.h"],
+    deps = [
+        ":fft",
+        ":polynomial",
+        ":status_macros",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_library(
+    name = "external_product",
+    srcs = ["external_product.cc"],
+    hdrs = ["external_product.h"],
+    deps = [
+        ":encryption",
+        ":polynomial",
+        ":polynomial_fft",
+        ":status_macros",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_library(
+    name = "lwes_to_rlwe",
+    srcs = ["lwes_to_rlwe.cc"],
+    hdrs = ["lwes_to_rlwe.h"],
+    deps = [
+        ":encryption",
+        ":matrix",
+        ":polynomial",
+        ":polynomial_fft",
+        ":status_macros",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_test(
+    name = "polynomial_test",
+    srcs = ["polynomial_test.cc"],
+    deps = [
+        ":polynomial",
+        ":polynomial_fft",
+        "//crypto/proto:rlwe_cc_proto",
+        "@com_github_google_shell_encryption//shell_encryption/testing:matchers",
+        "@com_github_google_shell_encryption//shell_encryption/testing:status_testing",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_binary(
+    name = "polynomial_benchmark",
+    srcs = ["polynomial_benchmark.cc"],
+    deps = [
+        ":polynomial",
+        ":polynomial_fft",
+        ":status_macros",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_benchmark//:benchmark",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "lwes_to_rlwe_test",
+    srcs = ["lwes_to_rlwe_test.cc"],
+    deps = [
+        ":encryption",
+        ":lwes_to_rlwe",
+        ":polynomial",
+        ":polynomial_fft",
+        ":status_macros",
+        "@com_github_google_shell_encryption//shell_encryption/prng",
+        "@com_github_google_shell_encryption//shell_encryption/prng:single_thread_chacha_prng",
+        "@com_github_google_shell_encryption//shell_encryption/testing:matchers",
+        "@com_github_google_shell_encryption//shell_encryption/testing:status_testing",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "matrix",
+    srcs = ["matrix.cc"],
+    hdrs = ["matrix.h"],
+    deps = [
+        ":encryption",
+        ":status_macros",
+        "//crypto/proto:pir_server_cc_proto",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/types:span",
+        "@highway//:hwy",
+    ],
+)
+
+cc_test(
+    name = "matrix_test",
+    srcs = ["matrix_test.cc"],
+    deps = [
+        ":matrix",
+        "//crypto/proto:pir_server_cc_proto",
+        "@com_github_google_shell_encryption//shell_encryption/testing:matchers",
+        "@com_github_google_shell_encryption//shell_encryption/testing:status_testing",
+        "@com_google_absl//absl/status",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_binary(
+    name = "matrix_benchmark",
+    srcs = ["matrix_benchmark.cc"],
+    deps = [
+        ":matrix",
+        ":status_macros",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_benchmark//:benchmark",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "db_row_interpolation",
+    srcs = ["db_row_interpolation.cc"],
+    hdrs = ["db_row_interpolation.h"],
+    deps = [
+        ":status_macros",
+        "//common/modular_int",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_test(
+    name = "db_row_interpolation_test",
+    srcs = ["db_row_interpolation_test.cc"],
+    deps = [
+        ":db_row_interpolation",
+        "@com_github_google_shell_encryption//shell_encryption/testing:matchers",
+        "@com_github_google_shell_encryption//shell_encryption/testing:status_testing",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/status",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "encryption",
+    srcs = ["encryption.cc"],
+    hdrs = ["encryption.h"],
+    deps = [
+        ":polynomial",
+        ":status_macros",
+        "@com_github_google_shell_encryption//shell_encryption:integral_types",
+        "@com_github_google_shell_encryption//shell_encryption:montgomery",
+        "@com_github_google_shell_encryption//shell_encryption:sample_error",
+        "@com_github_google_shell_encryption//shell_encryption/prng",
+        "@com_github_google_shell_encryption//shell_encryption/sampler:uniform_ternary",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/numeric:int128",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_library(
+    name = "hint_computation",
+    srcs = ["hint_computation.cc"],
+    hdrs = ["hint_computation.h"],
+    deps = [
+        ":matrix",
+        ":polynomial",
+        ":status_macros",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+    ],
+)
+
+cc_test(
+    name = "hint_computation_test",
+    srcs = ["hint_computation_test.cc"],
+    deps = [
+        ":hint_computation",
+        ":matrix",
+        ":polynomial",
+        ":polynomial_fft",
+        "@com_github_google_shell_encryption//shell_encryption/testing:matchers",
+        "@com_github_google_shell_encryption//shell_encryption/testing:status_testing",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/status",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "encryption_test",
+    srcs = ["encryption_test.cc"],
+    deps = [
+        ":encryption",
+        ":external_product",
+        ":polynomial",
+        ":polynomial_fft",
+        "@com_github_google_shell_encryption//shell_encryption:integral_types",
+        "@com_github_google_shell_encryption//shell_encryption/prng",
+        "@com_github_google_shell_encryption//shell_encryption/prng:single_thread_chacha_prng",
+        "@com_github_google_shell_encryption//shell_encryption/testing:matchers",
+        "@com_github_google_shell_encryption//shell_encryption/testing:status_testing",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "file_util",
+    srcs = ["file_util.cc"],
+    hdrs = ["file_util.h"],
+    deps = [
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "file_util_test",
+    srcs = ["file_util_test.cc"],
+    deps = [
+        ":file_util",
+        ":status_macros",
+        "@com_github_google_shell_encryption//shell_encryption/testing:matchers",
+        "@com_github_google_shell_encryption//shell_encryption/testing:status_testing",
+        "@com_google_absl//absl/status",
+        "@com_google_googletest//:gtest_main",
+    ],
+)

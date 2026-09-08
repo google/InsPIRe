@@ -1,0 +1,80 @@
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     https://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+edition = "2024";
+
+package private_membership.rlwe.v2.proto;
+
+import "crypto/proto/rlwe.proto";
+
+option java_package = "com.google.privatemembership.rlwe.v2.proto";
+option java_outer_classname = "PirServerProto";
+
+// Proto representation of a Matrix.
+message Matrix {
+  oneof matrix_data {
+    bytes data = 1;
+    bytes condensed_data = 2;
+  }
+
+  // Number of rows in the matrix.
+  int32 rows = 3;
+
+  // Number of columns in the matrix (accounting for condensation)
+  // equal to original_cols if not condensed.
+  int32 cols = 4;
+
+  // Flag indicating whether the matrix is condensed
+  bool is_condensed = 5;
+
+  // Number of columns in the original matrix (before condensation).
+  int32 original_cols = 6;
+}
+
+// Represents MatrixPack preprocessed outputs.
+message PreprocessMatrixPackOutput {
+  Polynomial a_tilde_agg = 1;
+  Matrix matrix = 2;
+  repeated Polynomial t_vec_h = 3;
+}
+
+// One proto for the entire database and preprocessed material
+// Holds preprocessed database matrices and preprocessing outputs.
+message PirPreprocessedData {
+  // Original database matrices
+  repeated Matrix db_matrices = 1;
+
+  // Preprocessed outputs for each shard of the database.
+  message ShardPreprocessedOutputs {
+    repeated PreprocessMatrixPackOutput outputs = 1;
+  }
+  repeated ShardPreprocessedOutputs preprocessed_outputs = 2;
+
+  // Public components of Rgsw encryption for second level of PIR
+  repeated Polynomial second_dim_a = 3;
+}
+
+// Separate proto for each shard.
+// Used when database is very large
+
+// Holds preprocessed matrices and preprocessing outputs for a single shard.
+message PirPreprocessedShard {
+  Matrix db_matrix = 1;
+  repeated PreprocessMatrixPackOutput outputs = 2;
+}
+
+// Holds standalone metadata for preprocessed database.
+message PirPreprocessedMetadata {
+  repeated Polynomial second_dim_a = 1;
+}

@@ -1,0 +1,95 @@
+# Copyright 2026 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+cc_binary(
+    name = "pir_metrics_tool",
+    srcs = ["pir_metrics_tool.cc"],
+    deps = [
+        "//crypto:encryption",
+        "//crypto:matrix",
+        "//crypto:status_macros",
+        "//crypto/pir:pir_params",
+        "//crypto/pir/client:pir_client",
+        "//crypto/pir/server:pir_preprocessed_data",
+        "//crypto/pir/server:pir_server",
+        "//crypto/pir/server:preprocessing_server",
+        "@com_github_google_shell_encryption//shell_encryption/prng",
+        "@com_github_google_shell_encryption//shell_encryption/prng:chacha_prng",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_absl//absl/time",
+    ],
+)
+
+cc_binary(
+    name = "pir_multi_db_metrics_tool",
+    srcs = ["pir_multi_db_metrics_tool.cc"],
+    deps = [
+        "//crypto:encryption",
+        "//crypto:matrix",
+        "//crypto:status_macros",
+        "//crypto/pir:pir_params",
+        "//crypto/pir/client:pir_client",
+        "//crypto/pir/server:pir_preprocessed_data",
+        "//crypto/pir/server:pir_server",
+        "//crypto/pir/server:preprocessing_server",
+        "@com_github_google_shell_encryption//shell_encryption/prng",
+        "@com_github_google_shell_encryption//shell_encryption/prng:chacha_prng",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/random",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:string_view",
+        "@com_google_absl//absl/time",
+    ],
+)
+
+cc_binary(
+    name = "pir_packing_metrics_tool",
+    srcs = ["pir_packing_metrics_tool.cc"],
+    deps = [
+        "//crypto:encryption",
+        "//crypto:lwes_to_rlwe",
+        "//crypto:matrix",
+        "//crypto:polynomial",
+        "//crypto:polynomial_fft",
+        "//crypto:status_macros",
+        "//crypto/pir:pir_params",
+        "//crypto/pir/client:pir_client",
+        "//crypto/pir/server:pir_preprocessed_data",
+        "//crypto/pir/server:preprocessing_server",
+        "@com_github_google_shell_encryption//shell_encryption/prng",
+        "@com_github_google_shell_encryption//shell_encryption/prng:chacha_prng",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/log",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/time",
+    ],
+)
